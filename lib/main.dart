@@ -196,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return Platform.isIOS
         ? CupertinoNavigationBar(
             middle: Text(
-              'Personal Expenses',
+              'Personal Expenses App',
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -210,7 +210,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           )
         : AppBar(
             title: Text(
-              'Personal Expenses',
+              'Personal Expenses App',
             ),
             actions: <Widget>[
               IconButton(
