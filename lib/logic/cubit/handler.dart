@@ -15,6 +15,10 @@ class AppHandler extends Cubit<AppState> {
   BuildContext context;
   Database database;
   DateTime selectedDate;
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  var titleController = TextEditingController();
+  var amountController = TextEditingController();
+
   AppHandler(this.context) : super(AppStateInitial());
   List<TransactionModel> userTransactions = [];
   bool showChart = false;
