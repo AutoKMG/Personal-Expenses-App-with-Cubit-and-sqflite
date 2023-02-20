@@ -21,8 +21,10 @@ class AdaptiveFlatButton extends StatelessWidget {
             ),
             onPressed: handler,
           )
-        : FlatButton(
-            textColor: Theme.of(context).primaryColor,
+        : TextButton(
+            style: ButtonStyle(
+                backgroundColor:
+                    MaterialStateProperty.all(Theme.of(context).primaryColor)),
             child: Text(
               text,
               style: TextStyle(
