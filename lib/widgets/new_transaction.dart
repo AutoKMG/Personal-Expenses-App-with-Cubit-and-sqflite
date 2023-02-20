@@ -1,72 +1,30 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_complete_guide/logic/cubit/handler.dart';
 import 'package:intl/intl.dart';
 
 import '../widgets/adaptive_flat_button.dart';
 
 class NewTransaction extends StatefulWidget {
-  final Function addTx;
-
-  NewTransaction(this.addTx) {
-    print('Constructor NewTransaction Widget');
-  }
+  BuildContext context;
+  AppHandler appHandler;
+  NewTransaction(this.appHandler, this.context);
+  static var formKey = GlobalKey<FormState>();
 
   @override
-  _NewTransactionState createState() {
-    print('createState NewTransaction Widget');
-    return _NewTransactionState();
-  }
+  State<NewTransaction> createState() => _NewTransactionState();
 }
 
 class _NewTransactionState extends State<NewTransaction> {
-  final _titleController = TextEditingController();
-  final _amountController = TextEditingController();
-  DateTime _selectedDate;
+  var titleController = TextEditingController();
 
-  _NewTransactionState() {
-    print('Constructor NewTransaction State');
-  }
-
-  @override
-  void initState() {
-    print('initState()');
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(NewTransaction oldWidget) {
-    print('didUpdateWidget()');
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  void dispose() {
-    print('dispose()');
-    super.dispose();
-  }
-
-  void _submitData() {
-    if (_amountController.text.isEmpty) {
-      return;
-    }
-    final enteredTitle = _titleController.text;
-    final enteredAmount = double.parse(_amountController.text);
-
-    if (enteredTitle.isEmpty || enteredAmount <= 0 || _selectedDate == null) {
-      return;
-    }
-
-    widget.addTx(
-      enteredTitle,
-      enteredAmount,
-      _selectedDate,
-    );
-
-    Navigator.of(context).pop();
-  }
+  var amountController = TextEditingController();
 
   void _presentDatePicker() {
     showDatePicker(
-      context: context,
+      context: widget.context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2019),
       lastDate: DateTime.now(),
@@ -74,11 +32,8 @@ class _NewTransactionState extends State<NewTransaction> {
       if (pickedDate == null) {
         return;
       }
-      setState(() {
-        _selectedDate = pickedDate;
-      });
+      widget.appHandler.changeSelectedDate(pickedDate);
     });
-    print('...');
   }
 
   @override
@@ -93,49 +48,77 @@ class _NewTransactionState extends State<NewTransaction> {
             right: 10,
             bottom: MediaQuery.of(context).viewInsets.bottom + 10,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              TextField(
-                decoration: InputDecoration(labelText: 'Title'),
-                controller: _titleController,
-                onSubmitted: (_) => _submitData(),
-                // onChanged: (val) {
-                //   titleInput = val;
-                // },
-              ),
-              TextField(
-                decoration: InputDecoration(labelText: 'Amount'),
-                controller: _amountController,
-                keyboardType: TextInputType.number,
-                onSubmitted: (_) => _submitData(),
-                // onChanged: (val) => amountInput = val,
-              ),
-              Container(
-                height: 70,
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        _selectedDate == null
-                            ? 'No Date Chosen!'
-                            : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
-                      ),
-                    ),
-                    AdaptiveFlatButton('Choose Date', _presentDatePicker)
-                  ],
+          child: Form(
+            key: NewTransaction.formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Title'),
+                  controller: titleController,
+                  keyboardType: TextInputType.text,
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Title can not be empty';
+                    } else {
+                      return null;
+                    }
+                  },
+                  // onChanged: (val) {
+                  //   titleInput = val;
+                  // },
                 ),
-              ),
-              ElevatedButton(
-                child: Text('Add Transaction'),
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).primaryColor),
-                    textStyle: MaterialStateProperty.all(TextStyle(
-                        color: Theme.of(context).textTheme.labelLarge.color))),
-                onPressed: _submitData,
-              ),
-            ],
+                TextFormField(
+                  decoration: InputDecoration(labelText: 'Amount'),
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Amount can not be empty';
+                    } else {
+                      return null;
+                    }
+                  },
+                ),
+                Container(
+                  height: 70,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: BlocBuilder<AppHandler, AppState>(
+                          builder: (context, state) {
+                            return Text(
+                              widget.appHandler.selectedDate == null
+                                  ? 'No Date Chosen!'
+                                  : 'Picked Date: ${DateFormat.yMd().format(widget.appHandler.selectedDate)}',
+                            );
+                          },
+                        ),
+                      ),
+                      AdaptiveFlatButton('Choose Date', _presentDatePicker)
+                    ],
+                  ),
+                ),
+                ElevatedButton(
+                  child: Text('Add Transaction'),
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          Theme.of(context).primaryColor),
+                      textStyle: MaterialStateProperty.all(TextStyle(
+                          color:
+                              Theme.of(context).textTheme.labelLarge.color))),
+                  onPressed: () {
+                    if (NewTransaction.formKey.currentState.validate()) {
+                      widget.appHandler.addNewTransaction(
+                        titleController.text,
+                        double.parse(amountController.text),
+                        widget.appHandler.selectedDate,
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
