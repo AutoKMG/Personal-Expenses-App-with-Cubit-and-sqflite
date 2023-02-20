@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
-                  labelLarge: TextStyle(color: Colors.white),
+                  titleLarge: TextStyle(color: Colors.white),
                 ),
             appBarTheme: AppBarTheme(
               toolbarTextStyle: ThemeData.light()
@@ -42,16 +42,17 @@ class MyApp extends StatelessWidget {
                     ),
                   )
                   .bodyMedium,
-              titleTextStyle: ThemeData.light()
-                  .textTheme
-                  .copyWith(
-                    titleMedium: TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                  .titleLarge,
+              titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+              // ThemeData.light()
+              //     .textTheme
+              //     .copyWith(
+              //       titleMedium: TextStyle(
+              //           fontFamily: 'OpenSans',
+              //           fontSize: 20,
+              //           fontWeight: FontWeight.bold,
+              //           color: Colors.white),
+              //     )
+              //     .titleLarge,
             ),
             colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.purple)
                 .copyWith(secondary: Colors.amber)),
