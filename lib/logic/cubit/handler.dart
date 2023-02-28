@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_complete_guide/models/transaction.dart';
 import 'package:flutter_complete_guide/widgets/chart.dart';
 import 'package:flutter_complete_guide/widgets/new_transaction.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 
 part 'state.dart';
@@ -15,6 +16,10 @@ class AppHandler extends Cubit<AppState> {
   BuildContext context;
   Database database;
   DateTime selectedDate;
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  var titleController = TextEditingController();
+  var priceController = TextEditingController();
+
   AppHandler(this.context) : super(AppStateInitial());
   List<TransactionModel> userTransactions = [];
   bool showChart = false;
@@ -27,22 +32,6 @@ class AppHandler extends Cubit<AppState> {
         ),
       );
     }).toList();
-  }
-
-  void addNewTransaction(String txTitle, double txAmount, DateTime chosenDate) {
-    final newTx = TransactionModel(
-      title: txTitle,
-      amount: txAmount,
-      date: chosenDate,
-      id: DateTime.now().toString(),
-    );
-    userTransactions.add(newTx);
-    emit(AppStateNewTransactionAdded());
-  }
-
-  void deleteTransaction(String id) {
-    userTransactions.removeWhere((tx) => tx.id == id);
-    emit(AppStateTransactionDeleted());
   }
 
   void changeSelectedDate(DateTime value) {
@@ -119,7 +108,7 @@ class AppHandler extends Cubit<AppState> {
     return Platform.isIOS
         ? CupertinoNavigationBar(
             middle: Text(
-              'Personal Expenses',
+              'Wallet Tracker',
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -133,7 +122,7 @@ class AppHandler extends Cubit<AppState> {
           )
         : AppBar(
             title: Text(
-              'Personal Expenses',
+              'Wallet Tracker',
             ),
             actions: <Widget>[
               IconButton(
@@ -142,5 +131,89 @@ class AppHandler extends Cubit<AppState> {
               ),
             ],
           );
+  }
+
+  // -----------------------------------------
+  // -----------------------------------------
+  // -----------------------------------------
+  // ------------- DATABASE PART -------------
+  // -----------------------------------------
+  // -----------------------------------------
+  // -----------------------------------------
+  void createDatabase() async {
+    emit(AppStateDatabaseLoading());
+    openDatabase(
+      'transactions.sql',
+      version: 1,
+      onCreate: (db, version) async {
+        await db
+            .execute(
+                'CREATE TABLE transactions (id INTEGER PRIMARY KEY, title TEXT, price NUMBER, date TEXT)')
+            .then((value) {
+          print("Database Created");
+        }).catchError((error) {
+          print("Error happened while creating database: ${error.toString()}");
+        });
+      },
+      onOpen: (db) {
+        getDataFromDatabse(db);
+        print("Database Opened!");
+      },
+    ).then((value) {
+      database = value;
+      emit(AppStateDatabaseCreated());
+    });
+  }
+
+  void insertToDatabase(
+      {@required String title, @required int price, @required String date}) {
+    database.transaction((txn) {
+      txn
+          .rawInsert(
+              'INSERT INTO transactions(title, price, date) VALUES("$title", "$price","$date")')
+          .then((value) {
+        emit(AppStateInsertToDatabase());
+        getDataFromDatabse(database);
+        print("$value row inserted successfully");
+      }).catchError((error) {
+        print("Error happened while inserting a new row: ${error.toString()}");
+      });
+      return null;
+    });
+  }
+
+  void deletingFromDatabase(id) {
+    database.rawDelete('DELETE FROM transactions where id =$id').then((value) {
+      print("$id row deleted");
+      userTransactions.removeWhere((element) {
+        return element.id == id;
+      });
+      emit(AppStateDeletingFromDatabase());
+      getDataFromDatabse(database);
+    }).catchError((error) {
+      print("Error happened while deleting from database: ${error.toString()}");
+    });
+  }
+
+  void getDataFromDatabse(Database database) {
+    database.rawQuery('SELECT * FROM transactions').then((value) {
+      if (value.isNotEmpty) {
+        value.forEach((element) {
+          TransactionModel newTranscation = new TransactionModel(
+              id: element["id"],
+              title: element["title"],
+              price: (element["price"] as int).toDouble(),
+              date: DateFormat.yMd().parse(element["date"]));
+          if ((userTransactions.singleWhere((it) => it.id == newTranscation.id,
+                  orElse: () => null)) !=
+              null) {
+            print('Already exists!');
+          } else {
+            userTransactions.add(newTranscation);
+          }
+        });
+      }
+      emit(AppStateDatabaseFetched());
+    });
   }
 }

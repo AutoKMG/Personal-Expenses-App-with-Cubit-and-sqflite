@@ -20,7 +20,8 @@ class MyApp extends StatelessWidget {
     return BlocProvider(
       create: (context) => AppHandler(context),
       child: MaterialApp(
-        title: 'Personal Expenses',
+        debugShowCheckedModeBanner: false,
+        title: 'Wallet Tracker',
         theme: ThemeData(
             fontFamily: 'Quicksand',
             textTheme: ThemeData.light().textTheme.copyWith(
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),
-                  labelLarge: TextStyle(color: Colors.white),
+                  titleLarge: TextStyle(color: Colors.white),
                 ),
             appBarTheme: AppBarTheme(
               toolbarTextStyle: ThemeData.light()
@@ -42,16 +43,17 @@ class MyApp extends StatelessWidget {
                     ),
                   )
                   .bodyMedium,
-              titleTextStyle: ThemeData.light()
-                  .textTheme
-                  .copyWith(
-                    titleMedium: TextStyle(
-                      fontFamily: 'OpenSans',
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  )
-                  .titleLarge,
+              titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
+              // ThemeData.light()
+              //     .textTheme
+              //     .copyWith(
+              //       titleMedium: TextStyle(
+              //           fontFamily: 'OpenSans',
+              //           fontSize: 20,
+              //           fontWeight: FontWeight.bold,
+              //           color: Colors.white),
+              //     )
+              //     .titleLarge,
             ),
             colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.purple)
                 .copyWith(secondary: Colors.amber)),
@@ -65,7 +67,8 @@ class MyHomePage extends StatelessWidget {
   MyHomePage();
   @override
   Widget build(BuildContext context) {
-    AppHandler appHandler = BlocProvider.of<AppHandler>(context);
+    AppHandler appHandler = BlocProvider.of<AppHandler>(context)
+      ..createDatabase();
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final PreferredSizeWidget appBar = appHandler.buildAppBar(context);
@@ -75,12 +78,15 @@ class MyHomePage extends StatelessWidget {
               mediaQuery.padding.top) *
           0.7,
       child: TransactionList(
-          appHandler.userTransactions, appHandler.deleteTransaction),
+          appHandler.userTransactions, appHandler.deletingFromDatabase),
     );
     final pageBody = BlocConsumer<AppHandler, AppState>(
       listener: (context, state) {
-        if (state is AppStateNewTransactionAdded) {
+        if (state is AppStateInsertToDatabase) {
           Navigator.pop(context);
+          appHandler.titleController.clear();
+          appHandler.priceController.clear();
+          appHandler.selectedDate = null;
         }
       },
       builder: (context, state) {

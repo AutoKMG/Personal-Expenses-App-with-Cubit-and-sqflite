@@ -7,24 +7,14 @@ import 'package:intl/intl.dart';
 
 import '../widgets/adaptive_flat_button.dart';
 
-class NewTransaction extends StatefulWidget {
+class NewTransaction extends StatelessWidget {
   BuildContext context;
   AppHandler appHandler;
   NewTransaction(this.appHandler, this.context);
-  static var formKey = GlobalKey<FormState>();
-
-  @override
-  State<NewTransaction> createState() => _NewTransactionState();
-}
-
-class _NewTransactionState extends State<NewTransaction> {
-  var titleController = TextEditingController();
-
-  var amountController = TextEditingController();
 
   void _presentDatePicker() {
     showDatePicker(
-      context: widget.context,
+      context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2019),
       lastDate: DateTime.now(),
@@ -32,7 +22,7 @@ class _NewTransactionState extends State<NewTransaction> {
       if (pickedDate == null) {
         return;
       }
-      widget.appHandler.changeSelectedDate(pickedDate);
+      appHandler.changeSelectedDate(pickedDate);
     });
   }
 
@@ -49,13 +39,13 @@ class _NewTransactionState extends State<NewTransaction> {
             bottom: MediaQuery.of(context).viewInsets.bottom + 10,
           ),
           child: Form(
-            key: NewTransaction.formKey,
+            key: appHandler.formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Title'),
-                  controller: titleController,
+                  controller: appHandler.titleController,
                   keyboardType: TextInputType.text,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -69,12 +59,12 @@ class _NewTransactionState extends State<NewTransaction> {
                   // },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Amount'),
-                  controller: amountController,
+                  decoration: InputDecoration(labelText: 'Price'),
+                  controller: appHandler.priceController,
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Amount can not be empty';
+                      return 'price can not be empty';
                     } else {
                       return null;
                     }
@@ -88,9 +78,9 @@ class _NewTransactionState extends State<NewTransaction> {
                         child: BlocBuilder<AppHandler, AppState>(
                           builder: (context, state) {
                             return Text(
-                              widget.appHandler.selectedDate == null
+                              appHandler.selectedDate == null
                                   ? 'No Date Chosen!'
-                                  : 'Picked Date: ${DateFormat.yMd().format(widget.appHandler.selectedDate)}',
+                                  : 'Picked Date: ${DateFormat.yMd().format(appHandler.selectedDate)}',
                             );
                           },
                         ),
@@ -108,11 +98,12 @@ class _NewTransactionState extends State<NewTransaction> {
                           color:
                               Theme.of(context).textTheme.labelLarge.color))),
                   onPressed: () {
-                    if (NewTransaction.formKey.currentState.validate()) {
-                      widget.appHandler.addNewTransaction(
-                        titleController.text,
-                        double.parse(amountController.text),
-                        widget.appHandler.selectedDate,
+                    if (appHandler.formKey.currentState.validate() &&
+                        appHandler.selectedDate != null) {
+                      appHandler.insertToDatabase(
+                        title: appHandler.titleController.text,
+                        price: int.parse(appHandler.priceController.text),
+                        date: DateFormat.yMd().format(appHandler.selectedDate),
                       );
                     }
                   },
