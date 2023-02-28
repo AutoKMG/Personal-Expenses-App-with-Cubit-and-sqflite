@@ -20,20 +20,20 @@ class Chart extends StatelessWidget {
         if (recentTransactions[i].date.day == weekDay.day &&
             recentTransactions[i].date.month == weekDay.month &&
             recentTransactions[i].date.year == weekDay.year) {
-          totalSum += recentTransactions[i].amount;
+          totalSum += recentTransactions[i].price;
         }
       }
 
       return {
         'day': DateFormat.E().format(weekDay).substring(0, 1),
-        'amount': totalSum,
+        'price': totalSum,
       };
     }).reversed.toList();
   }
 
   double get totalSpending {
     return groupedTransactionValues.fold(0.0, (sum, item) {
-      return sum + item['amount'];
+      return sum + item['price'];
     });
   }
 
@@ -51,10 +51,10 @@ class Chart extends StatelessWidget {
               fit: FlexFit.tight,
               child: ChartBar(
                 data['day'],
-                data['amount'],
+                data['price'],
                 totalSpending == 0.0
                     ? 0.0
-                    : (data['amount'] as double) / totalSpending,
+                    : (data['price'] as double) / totalSpending,
               ),
             );
           }).toList(),
