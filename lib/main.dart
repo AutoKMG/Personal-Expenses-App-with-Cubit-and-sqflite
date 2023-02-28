@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
     return BlocProvider(
       create: (context) => AppHandler(context),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Personal Expenses',
         theme: ThemeData(
             fontFamily: 'Quicksand',
@@ -66,7 +67,8 @@ class MyHomePage extends StatelessWidget {
   MyHomePage();
   @override
   Widget build(BuildContext context) {
-    AppHandler appHandler = BlocProvider.of<AppHandler>(context);
+    AppHandler appHandler = BlocProvider.of<AppHandler>(context)
+      ..createDatabase();
     final mediaQuery = MediaQuery.of(context);
     final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final PreferredSizeWidget appBar = appHandler.buildAppBar(context);
@@ -76,12 +78,15 @@ class MyHomePage extends StatelessWidget {
               mediaQuery.padding.top) *
           0.7,
       child: TransactionList(
-          appHandler.userTransactions, appHandler.deleteTransaction),
+          appHandler.userTransactions, appHandler.deletingFromDatabase),
     );
     final pageBody = BlocConsumer<AppHandler, AppState>(
       listener: (context, state) {
-        if (state is AppStateNewTransactionAdded) {
+        if (state is AppStateInsertToDatabase) {
           Navigator.pop(context);
+          appHandler.titleController.clear();
+          appHandler.priceController.clear();
+          appHandler.selectedDate = null;
         }
       },
       builder: (context, state) {
