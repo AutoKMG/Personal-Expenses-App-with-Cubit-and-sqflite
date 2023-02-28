@@ -59,12 +59,12 @@ class NewTransaction extends StatelessWidget {
                   // },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Amount'),
-                  controller: appHandler.amountController,
+                  decoration: InputDecoration(labelText: 'Price'),
+                  controller: appHandler.priceController,
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value.isEmpty) {
-                      return 'Amount can not be empty';
+                      return 'price can not be empty';
                     } else {
                       return null;
                     }
@@ -98,11 +98,12 @@ class NewTransaction extends StatelessWidget {
                           color:
                               Theme.of(context).textTheme.labelLarge.color))),
                   onPressed: () {
-                    if (appHandler.formKey.currentState.validate()) {
-                      appHandler.addNewTransaction(
-                        appHandler.titleController.text,
-                        double.parse(appHandler.amountController.text),
-                        appHandler.selectedDate,
+                    if (appHandler.formKey.currentState.validate() &&
+                        appHandler.selectedDate != null) {
+                      appHandler.insertToDatabase(
+                        title: appHandler.titleController.text,
+                        price: int.parse(appHandler.priceController.text),
+                        date: DateFormat.yMd().format(appHandler.selectedDate),
                       );
                     }
                   },
