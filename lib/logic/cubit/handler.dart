@@ -108,7 +108,7 @@ class AppHandler extends Cubit<AppState> {
     return Platform.isIOS
         ? CupertinoNavigationBar(
             middle: Text(
-              'Personal Expenses',
+              'Wallet Tracker',
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -122,7 +122,7 @@ class AppHandler extends Cubit<AppState> {
           )
         : AppBar(
             title: Text(
-              'Personal Expenses',
+              'Wallet Tracker',
             ),
             actions: <Widget>[
               IconButton(

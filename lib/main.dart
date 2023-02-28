@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       create: (context) => AppHandler(context),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Personal Expenses',
+        title: 'Wallet Tracker',
         theme: ThemeData(
             fontFamily: 'Quicksand',
             textTheme: ThemeData.light().textTheme.copyWith(
